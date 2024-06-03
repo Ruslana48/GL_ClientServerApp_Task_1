@@ -9,7 +9,7 @@
 #include <string>
 #include <stdlib.h>
 #include <netinet/in.h>
-#include "/home/ruslana/ClientServerApp/Network/TcpSocketNetwork.h"
+#include "TcpSocketNetwork.h"
 
 namespace application{
     class Server{
@@ -17,6 +17,10 @@ namespace application{
             Server();
             Server(const std::string &ip, unsigned int port);
             ~Server();
+
+            // Should be not copyable
+            Server(const Server&) = delete;
+            Server& operator=(const Server&) = delete;
 
             void run();
             void stop();

@@ -12,13 +12,13 @@ SRCS = $(wildcard $(SRCDIR)/*.cpp)
 OBJS = $(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.o,$(SRCS))
 
 $(TARGET): $(OBJS)
-    $(CC) $(CFLAGS) $(INCDIR) -o $@ $^
+	$(CC) $(CFLAGS) $(INCDIR) -o $@ $^
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
-    @mkdir -p $(BUILDDIR)
-    $(CC) $(CFLAGS) $(INCDIR) -c -o $@ $<
+	@mkdir -p $(BUILDDIR)
+	$(CC) $(CFLAGS) $(INCDIR) -c -o $@ $<
 
 clean:
-    rm -rf $(BUILDDIR) $(TARGET)
+	rm -rf $(BUILDDIR) $(TARGET)
 
 .PHONY: clean

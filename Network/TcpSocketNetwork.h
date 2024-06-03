@@ -5,7 +5,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include "/home/ruslana/ClientServerApp/Socket/Socket.h"
+#include "Socket.h" // This is not gonna work for me
 #include <iostream>
 
 
@@ -16,6 +16,8 @@ namespace network{
     class TcpSocketNetwork{
     private:
 
+    // Everything is public
+    // define related functions together
     public:
         unsigned short get_remote_port() const;
 
@@ -35,7 +37,7 @@ namespace network{
         bool destroy();
 
         bool listen(const std::string &ip, unsigned short port);
-        bool accept(TcpSocketNetwork &socket);
+        bool accept(TcpSocketNetwork &socket); // return TcpSocketNetwork. TcpSocketNetwork make convertable to bool
         void close();
 
         char m_remote_ip[INET_ADDRSTRLEN + 1] = {0};

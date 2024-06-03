@@ -3,7 +3,7 @@
 #include <pthread.h>
 
 namespace system{
-    class Thread{
+    class Thread{ // Not used at all
         private:
             pthread_t thread;
             bool th_joinable=0;

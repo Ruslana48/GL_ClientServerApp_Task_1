@@ -30,7 +30,7 @@ namespace network{
     {
         sockaddr_in hint = {0};
         socklen_t len = sizeof(hint);
-        auto val = ::accept(m_id, (struct sockaddr *)&hint, &len);
+        auto val = ::accept(m_id, (struct sockaddr *)&hint, &len);// val is not a good naming
         if (val == SOCKET_ERROR)
         {
             std::cout<<"accept failed "<<strerror(errno)<<std::endl;
@@ -65,6 +65,9 @@ namespace network{
 
 
     bool TcpSocketNetwork::receive(void *buffer, size_t buffer_size) {
+        if (!buffer || !buffer_size) {
+            return false;
+        }
         std::cout << "Receiving data..." << std::endl;
         size_t bytes_received = recv(m_id, buffer, buffer_size, 0);
         if (bytes_received == -1) {
@@ -76,9 +79,12 @@ namespace network{
         }
         std::cout << "Received " << bytes_received << " bytes of data." << std::endl;
         return true;
+
+        // int ignore;
+        // return receive(buffer, buffer_size, ignore);
     }
 
-    bool TcpSocketNetwork::receive(void *buffer, size_t buffer_size, size_t &received) {
+    bool TcpSocketNetwork::receive(void *buffer, size_t buffer_size, size_t &received) { // copy paste
         std::cout << "Receiving data..." << std::endl;
         size_t bytes_received = recv(m_id, buffer, buffer_size, 0);
         if (bytes_received == -1) {
@@ -141,6 +147,6 @@ namespace network{
     bool TcpSocketNetwork::destroy(){
         if (m_id != INVALID_SOCKET){
             m_id = INVALID_SOCKET;
-        }
+        } // Why don't you close/shutdown socket
     }
 }

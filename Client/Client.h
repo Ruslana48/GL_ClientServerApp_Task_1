@@ -11,7 +11,7 @@
 #include <dirent.h>
 #include <algorithm>
 #include <signal.h>
-#include "/home/ruslana/ClientServerApp/Network/TcpSocketNetwork.h"
+#include "TcpSocketNetwork.h"
 
 namespace application {
 
@@ -25,7 +25,7 @@ namespace application {
         network::TcpSocketNetwork socket;
 
     public:
-        Client();
+        Client() = default;
         ~Client();
         bool connect(const std::string &ip, unsigned int port);
         bool wait(const std::string &ip, unsigned int port);

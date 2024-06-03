@@ -16,7 +16,7 @@ namespace network{
             return 0;
 
         }
-        return 1;
+        return 1; // true
     }
     bool Socket::destroy(){
         if(m_id!=INVALID_SOCKET){

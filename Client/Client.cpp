@@ -6,9 +6,6 @@
 
 namespace application {
 
-    Client::Client() {
-    }
-
     Client::~Client() {
         socket.disconnect();
     }
@@ -24,7 +21,7 @@ namespace application {
         }
     }
 
-    bool Client::wait(const std::string& ip, unsigned int port) {
+    bool Client::wait(const std::string& ip, unsigned int port) { // Why this is in client?
         network::TcpSocketNetwork listener;
         if (listener.listen(ip, port)) {
             if (listener.accept(socket)) {
@@ -43,6 +40,7 @@ namespace application {
     std::vector<ProcessInfo> Client::getProcessList() {
         std::vector<ProcessInfo> processList;
 
+        // std::unique_ptr<DIR> procDir(, deleter);
         DIR* procDir = opendir("/proc");
         if (!procDir) {
             std::cerr << "Error: Failed to open /proc" << std::endl;
@@ -50,32 +48,32 @@ namespace application {
         }
 
         struct dirent* entry;
-        while ((entry = readdir(procDir)) != nullptr) {
+        while ((entry = readdir(procDir)) != nullptr) { // std::filesystem
             if (entry->d_type == DT_DIR && std::isdigit(entry->d_name[0])) {
                 std::string pid = entry->d_name;
 
                 std::ifstream cmdlineFile("/proc/" + pid + "/cmdline");
-            if (cmdlineFile.is_open()) {
+            if (cmdlineFile.is_open()) { // align code
                 std::string command;
-                std::getline(cmdlineFile, command);
+                std::getline(cmdlineFile, command); // Read all file
 
                 command.erase(std::remove(command.begin(), command.end(), '\0'), command.end());
 
                 if (!command.empty()) {
                     processList.push_back({pid, command});
                 }
-                cmdlineFile.close();
+                cmdlineFile.close(); // file will be closed in dtor of ifstream
             }
             }
         }
 
-        closedir(procDir);
+        closedir(procDir); // use RAII unique_ptr
         return processList;
     }
 
     void Client::run() {
         char buffer[1024] = {0};
-        memset(buffer, 0, sizeof(buffer));
+        memset(buffer, 0, sizeof(buffer)); // You already filled it with 0
 
         if (!socket.receive(buffer, sizeof(buffer))) {
             std::cerr << "Failed to receive response from server" << std::endl;
@@ -84,24 +82,29 @@ namespace application {
             std::cout << "Received data from server: " << buffer << std::endl;
         }
 
+        // if (buffer == "get_processes")
+
+        // You do not check what server asked you to do
         std::vector<ProcessInfo> processes = getProcessList();
     
         std::cout << "Process list:\n";
-        for (const auto& process : processes) {
+        for (const auto& process : processes) { // const auto& [pid, command] : processes
             std::cout << "PID: " << process.pid << ", Command: " << process.command << std::endl;
         }
 
         // Send the process list to the server
         if (!sendProcessListToServer(processes)) {
             std::cerr << "Failed to send process list to server" << std::endl;
-        } else {
-            std::cout << "Sent process list to server" << std::endl;
+            return;
         }
+
+        std::cout << "Sent process list to server" << std::endl;
 
         // Receive request from server to delete specific process
         std::string closeRequest;
         if (!socket.receive(buffer, sizeof(buffer))) {
             std::cerr << "Failed to receive close process request from server" << std::endl;
+            return;
         } else {
             closeRequest = buffer;
             std::cout << "Received close process request from server: " << closeRequest << std::endl;
@@ -109,12 +112,12 @@ namespace application {
             std::string command, pidStr;
             iss >> command >> pidStr;
             if (command == "close_processes") {
-                int pidToClose = std::stoi(pidStr);
+                int pidToClose = std::stoi(pidStr); // exception not handled
                 if (kill(pidToClose, SIGTERM) == -1) {
                     std::cerr << "Error closing process with PID " << pidToClose << ": " << strerror(errno) << std::endl;
                 } else {
                     std::cout << "Closed process with PID: " << pidToClose << std::endl;
-                }
+                } // You don't reply to server that it was process finished its work
             } else {
                 std::cerr << "Invalid close process request from server" << std::endl;
             }
@@ -129,7 +132,7 @@ namespace application {
         }
         std::string serializedProcessList = ss.str();
 
-        if (!socket.send(serializedProcessList.c_str(), serializedProcessList.length())) {
+        if (!socket.send(serializedProcessList.c_str(), serializedProcessList.length())) { // You don't check if you sent all data
             return false;
         } else {
             return true;
